@@ -7,5 +7,6 @@ export const themas = {
         bgScreen: "#f1f7fa",
         red: "#FF494C",
         lightBlue: "#87CEF6",
+        transtarent: "rgba(0, 0, 0, 0.5)"
     }
 }

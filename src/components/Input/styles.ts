@@ -12,14 +12,13 @@ export const style = StyleSheet.create({
         marginTop: 10,
         borderColor: '#ccc',
         flexDirection: "row",
+        alignItems: "center",
         borderRadius: 20,
-        justifyContent: "center",
         backgroundColor: themas.colors.lightGray,
     },
-    input: {
+    inputText: {
         flex: 1,
-        height: "100%",
-        color: "#000000",
+        color: "#000",
         fontSize: 16,
         padding: 0,
         textAlignVertical: "center",

@@ -45,24 +45,39 @@ export const Input = forwardRef<TextInput, inputProps>(
                 }
             ]}>
                 {IconLeft && iconName &&(
-                    <TouchableOpacity onPress={onIconPress} style={style.buttom}>
-                        <IconLeft name={iconName} size={iconSize} color={iconColor} style={style.Icon}/>
+                    <TouchableOpacity 
+                        onPress={onIconPress} 
+                        style={style.buttom}
+                    >
+                        <IconLeft 
+                            name={iconName} 
+                            size={iconSize} 
+                            color={iconColor} 
+                            style={style.Icon}
+                        />
                     </TouchableOpacity>
                 )}
+
                 <TextInput
                     ref={ref}
                     style={[
-                        style.input, 
+                        style.inputText, 
                         {
-                            width: calculateSizeWidth(),
-                            height: "100%"
+                            width: calculateSizeWidth()
                         }
                     ]}
                     {...rest}
                 />
                 {IconRight && iconName &&(
-                    <TouchableOpacity onPress={onIconPress}>
-                        <IconRight name={iconName} size={iconSize} color={iconColor} style={style.Icon}/>
+                    <TouchableOpacity 
+                        onPress={onIconPress}
+                    >
+                        <IconRight 
+                            name={iconName} 
+                            size={iconSize} 
+                            color={iconColor} 
+                            style={style.Icon}
+                        />
                     </TouchableOpacity>
                 )}
             </View>

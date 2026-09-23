@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/ui": "~57.0.19",
+    "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-native-vector-icons/material-icons": "^13.1.4",
     "@react-navigation/bottom-tabs": "^7.19.1",
