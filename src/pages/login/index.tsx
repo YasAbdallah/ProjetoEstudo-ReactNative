@@ -29,7 +29,7 @@ export default function Login(){
             if(!email || !password){
                 return Alert.alert("Atencao", "Informe os campos obrigatorios.");
             }
-            navigation.navigate("BottomRoutes");
+            navigation.reset({routes: [{name: "BottomRoutes"}]});
         } catch (error) {
             console.log(error);
         }

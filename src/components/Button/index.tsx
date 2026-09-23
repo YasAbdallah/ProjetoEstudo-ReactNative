@@ -10,7 +10,7 @@ type ButtomProps = TouchableHighlightProps & {
 export function Button({...rest}:ButtomProps){
     return  (
         <TouchableOpacity style={style.button} {...rest}  activeOpacity={0.6}>
-            {rest.loading ? <ActivityIndicator/> : <Text style={style.textButton}>Entrar</Text>}
+            {rest.loading ? <ActivityIndicator/> : <Text style={style.textButton}>{rest.text}</Text>}
         </TouchableOpacity>
     );
 }
