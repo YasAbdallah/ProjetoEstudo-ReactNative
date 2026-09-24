@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Modal, View, Platform } from "react-native";
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { style } from "./styles";
 
 type CustomDateTimePickerProps = {
     type: "date" | "time";
+    value?: Date;
     onDateChange: (date: Date) => void;
     show: boolean;
     setShow: (show: boolean) => void;
 }
 
-const CustomDateTimePicker = ({type, onDateChange, show, setShow}: CustomDateTimePickerProps) => {
-    const [date, setDate] = useState(new Date());
-
-    useEffect(() => {
-        if (onDateChange) {
-            onDateChange(date);
-        }
-    }, [date, onDateChange]);
-
-    const onChange = (event: any, selectedDate?: Date) => {
-        const currentDate = selectedDate || date;
-        setDate(currentDate);
+const CustomDateTimePicker = ({type, value, onDateChange, show, setShow}: CustomDateTimePickerProps) => {
+    const onValueChange = (_event: any, selectedDate?: Date) => {
+        const currentDate = selectedDate ? new Date(selectedDate) : value ? new Date(value) : new Date();
+        onDateChange(currentDate);
         setShow(false);
     }
 
@@ -29,6 +22,8 @@ const CustomDateTimePicker = ({type, onDateChange, show, setShow}: CustomDateTim
         <Modal
             transparent={true}
             visible={show}
+            animationType="slide"
+            statusBarTranslucent={true}
             onRequestClose={() => setShow(false)}
         >
             <View style={style.modalOverlay}>
@@ -37,10 +32,11 @@ const CustomDateTimePicker = ({type, onDateChange, show, setShow}: CustomDateTim
                         Platform.OS === 'android' && {backgroundColor: "transparent"}
                     ]}>
                         <DateTimePicker
-                            value={date}
+                            value={value ?? new Date()}
                             mode={type}
                             display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                            onValueChange={onChange}
+                            onValueChange={onValueChange}
+                            onDismiss={() => setShow(false)}
                         />
                 </View>
             </View>

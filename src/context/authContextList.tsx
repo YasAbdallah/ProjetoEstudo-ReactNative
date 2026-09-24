@@ -1,10 +1,11 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import React, { createContext, useContext, useRef, useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, KeyboardAvoidingView, Platform } from "react-native";
+import { Dimensions, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Modalize } from "react-native-modalize";
 import { Input } from "../components/Input";
 import { themas } from "../global/themes";
 import { Flag } from "../components/Flag";
+import { style } from "./styles";
 import CustomDateTimePicker from "../components/CustomDateTimePicker";
 
 
@@ -29,8 +30,10 @@ export const AuthProviderList = (props: any): any => {
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [selectedFlag, setSelectedFlag] = useState<string>("urgente");
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [selectedTime, setSelectedTime] = useState<Date>(new Date());
+    const [selectedDateValue, setSelectedDateValue] = useState<Date>(new Date());
+    const [selectedTimeValue, setSelectedTimeValue] = useState<Date>(new Date());
+    const [selectedDate, setSelectedDate] = useState<string>("");
+    const [selectedTime, setSelectedTime] = useState<string>("");
 
 
     const [showDataPicker, setShowDataPicker] = useState(false);
@@ -53,18 +56,22 @@ export const AuthProviderList = (props: any): any => {
     }
 
     const handleDateChange = (date: Date) => {
-        setSelectedDate(date);
+        const nextDate = new Date(date);
+        setSelectedDateValue(nextDate);
+        setSelectedDate(nextDate.toLocaleDateString());
     }
 
     const handleTimeChange = (time: Date) => {
-        setSelectedTime(time);
+        const nextTime = new Date(time);
+        setSelectedTimeValue(nextTime);
+        setSelectedTime(nextTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     }
 
     const _container = () => {
         return (
             <KeyboardAvoidingView
                 style={style.container}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                behavior={Platform.OS === "ios" ? "padding" : "padding"}
             >
                 <View style={style.header}>
                     <TouchableOpacity onPress={() => onClose()}>
@@ -81,67 +88,79 @@ export const AuthProviderList = (props: any): any => {
                         ></MaterialIcons>
                     </TouchableOpacity>
                 </View>
-                <View style={style.content}>
-                    <Input
-                        text="Titulo:"
-                        labelStyle={style.label}
-                        value={title}
-                        onChangeText={setTitle}
-                    />
-                    <Input
-                        text="Descricao:"
-                        labelStyle={style.label}
-                        height={100}
-                        multiline
-                        numberOfLines={5}
-                        value={description}
-                        onChangeText={setDescription}
-                        textAlignVertical="top"
-                    />
+                <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={style.content}>
+                        <Text style={style.label}>Titulo:</Text>
+                        <TextInput
+                            value={title}
+                            onChangeText={setTitle}
+                            placeholder="Digite o título"
+                            placeholderTextColor="#999"
+                            style={style.tituloInput}
+                        />
+                        <Input
+                            text="Descricao:"
+                            labelStyle={style.label}
+                            placeholder="Digite a descrição"
+                            placeholderTextColor="#999"
+                            height={100}
+                            multiline
+                            numberOfLines={5}
+                            value={description}
+                            onChangeText={setDescription}
+                            textAlignVertical="top"
+                        />
 
-                    <View style={{ flexDirection: "row", gap: 10, width: "100%" }}>
-                        <TouchableOpacity
-                            style={{ flex: 1 }}
-                            onPress={() => setShowDataPicker(true)}
-                        >
-                            <Input
-                                text="Data Limite:"
-                                labelStyle={style.label}
-                                editable={false}
-                                value={selectedDate.toLocaleDateString()}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{ flex: 1 }}
-                            onPress={() => setShowTimePicker(true)}
-                        >
-                            <Input
-                                text="Hora Limite:"
-                                labelStyle={style.label}
-                                editable={false}
-                                value={selectedTime.toLocaleTimeString()}
-                            />
-                        </TouchableOpacity>
+                        <View style={style.viewDateTimePicker}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={style.label}>Data Limite:</Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowDataPicker(true)}
+                                    style={style.toucheble}
+                                >
+                                    <Text style={{ color: selectedDate ? "#000" : "#999" }}>
+                                        {selectedDate || "Selecione a data"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={style.label}>Hora Limite:</Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowTimePicker(true)}
+                                    style={style.toucheble}
+                                >
+                                    <Text style={{ color: selectedTime ? "#000" : "#999" }}>
+                                        {selectedTime || "Selecione a hora"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <CustomDateTimePicker
+                            type={"date"}
+                            value={selectedDateValue}
+                            show={showDataPicker}
+                            setShow={setShowDataPicker}
+                            onDateChange={handleDateChange}
+                        />
+                        <CustomDateTimePicker
+                            type={"time"}
+                            value={selectedTimeValue}
+                            show={showTimePicker}
+                            setShow={setShowTimePicker}
+                            onDateChange={handleTimeChange}
+                        />
                     </View>
-                    <CustomDateTimePicker
-                        type={"date"}
-                        show={showDataPicker}
-                        setShow={setShowDataPicker}
-                        onDateChange={handleDateChange}
-                    />
-                    <CustomDateTimePicker
-                        type={"time"}
-                        show={showTimePicker}
-                        setShow={setShowTimePicker}
-                        onDateChange={handleTimeChange}
-                    />
-                </View>
-                <View style={style.containerFlag}>
-                    <Text style={style.label}>Flags: </Text>
-                    <View style={style.rowFlags}>
-                        {_renderFlags()}
+                    <View style={style.containerFlag}>
+                        <Text style={style.label}>Flags: </Text>
+                        <View style={style.rowFlags}>
+                            {_renderFlags()}
+                        </View>
                     </View>
-                </View>
+                </ScrollView>
             </KeyboardAvoidingView>
         );
     }
@@ -151,8 +170,18 @@ export const AuthProviderList = (props: any): any => {
             {props.children}
             <Modalize
                 ref={modalizeRef}
-                childrenStyle={{ height: Dimensions.get("window").height * 1.7 }}
-                adjustToContentHeight={true}
+                modalHeight={Dimensions.get("window").height * 0.8}
+                panGestureEnabled={false}
+                tapGestureEnabled={false}
+                avoidKeyboardLikeIOS={true}
+                keyboardAvoidingBehavior="padding"
+                keyboardAvoidingOffset={Platform.OS === "ios" ? 20 : 0}
+                disableScrollIfPossible={false}
+                scrollViewProps={{
+                    keyboardShouldPersistTaps: "always",
+                    showsVerticalScrollIndicator: false,
+                }}
+                childrenStyle={{ flex: 1 }}
             >
                 {_container()}
             </Modalize>
@@ -161,39 +190,3 @@ export const AuthProviderList = (props: any): any => {
 }
 
 export const useAuth = () => useContext(AuthContextList);
-
-const style = StyleSheet.create({
-    container: {
-        width: "100%"
-    },
-    header: {
-        width: "100%",
-        height: 40,
-        paddingHorizontal: 40,
-        flexDirection: "row",
-        marginTop: 20,
-        justifyContent: "space-between",
-        alignItems: "center"
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "bold"
-    },
-    content: {
-        width: "100%",
-        paddingHorizontal: 20
-    },
-    containerFlag: {
-        width: "100%",
-        padding: 10
-    },
-    label: {
-        fontWeight: "bold",
-        color: "#000"
-    },
-    rowFlags: {
-        flexDirection: "row",
-        gap: 10,
-        marginTop: 10
-    }
-})

@@ -1,4 +1,4 @@
-import React, {forwardRef } from "react";
+import React, {forwardRef, useImperativeHandle, useRef } from "react";
 import { StyleProp, Text, TextInput, TextInputProps, TextStyle, TouchableOpacity, View } from 'react-native';
 import { style } from "./styles";
 import  MaterialIcons  from '@react-native-vector-icons/material-icons';
@@ -22,6 +22,9 @@ export const Input = forwardRef<TextInput, inputProps>(
     (Props:inputProps, ref) => {
 
     const {text, iconName, IconLeft, IconRight, iconColor, iconSize, onIconPress, height, labelStyle, ...rest} = Props;
+    const inputRef = useRef<TextInput>(null);
+
+    useImperativeHandle(ref, () => inputRef.current as TextInput);
     
     const calculateSizeWidth = () => {
         if(IconLeft && IconRight){return "80%"}
@@ -59,13 +62,19 @@ export const Input = forwardRef<TextInput, inputProps>(
                 )}
 
                 <TextInput
-                    ref={ref}
+                    ref={inputRef}
                     style={[
                         style.inputText, 
                         {
-                            width: calculateSizeWidth()
+                            flex:1,
+                            height: "100%",
                         }
                     ]}
+                    onPressIn={() => {
+                        if (rest.editable !== false) {
+                            inputRef.current?.focus();
+                        }
+                    }}
                     {...rest}
                 />
                 {IconRight && iconName &&(
