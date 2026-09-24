@@ -1,57 +1,46 @@
-import React from "react";
-
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import React, { useContext, useRef } from "react";
+import { FlatList, Text, View } from "react-native";
 import { style } from "./styles";
 import { Input } from "../../components/Input";
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { themas } from "../../global/themes";
 import { Ball } from "../../components/Ball";
 import { Flag } from "../../components/Flag";
+import { AuthContextList } from "../../context/authContextList";
+import { AuthContextType, PropCard } from "../../global/Props";
+import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-type PropCard = {
-    item: number,
-    title: string,
-    description: string,
-    flag: "urgente" | "opcional"
-}
 
-const data:Array<PropCard> = [
-    {
-        item: 0,
-        title: "Realizar a locao de casa!",
-        description: "Pagina 10 a 20",
-        flag: "urgente"
-    },
-    {
-        item: 1,
-        title: "Passear com o cachorro!",
-        description: "Ele adora.",
-        flag: "urgente"
-    },
-    {
-        item: 2,
-        title: "Sair para tomar acai!",
-        description: "La no the Beast pq sim.",
-        flag: "urgente"
-    }
-]
+const getFlagColor = (flag: PropCard["flag"]) => flag === "urgente" ? themas.colors.red : themas.colors.lightBlue; 
+
 
 export default function List() {
+    const { taskList, onOpen, handleEdit, handleDelete } = useContext<AuthContextType>(AuthContextList);
+    const swipeableRef = useRef<SwipeableMethods>(null);
 
-    const _renderCard = (item:PropCard) => {
+    const _renderCard = (Props: PropCard, index: any) => {
+        const color = getFlagColor(Props.flag);
+
         return (
-            <TouchableOpacity style={style.card}>
-                <View style={style.rowCard}>
-                    <View style={style.rowCardLeft}>
-                        <Ball color="red"/>
-                        <View>
-                            <Text style={style.titleCard}>{item.title} Teste</Text>
-                            <Text style={style.descriptionCard}>{item.description}</Text>
+            <Swipeable
+                ref={(ref) => {swipeableRef.current = ref}}
+                key={index}
+            
+            >
+                <View style={style.card}>
+                    <View style={style.rowCard}>
+                        <View style={style.rowCardLeft}>
+                            <Ball color={color} />
+                            <View style={{ flex: 1 }}>
+                                <Text style={style.titleCard}>{Props.title}</Text>
+                                <Text style={style.descriptionCard}>{Props.description}</Text>
+                                <Text style={style.descriptionCard}>Até: {Props.timeLimit.toISOString()}</Text>
+                            </View>
+                            <Flag caption={Props.flag} color={color} />
                         </View>
-                        <Flag caption={item.flag} color={themas.colors.red}/>
                     </View>
                 </View>
-            </TouchableOpacity>
+            </Swipeable>
         );
     }
 
@@ -70,12 +59,10 @@ export default function List() {
             </View>
             <View style={style.boxList}>
                 <FlatList 
-                    data={data}
+                    data={taskList}
                     style={{marginTop:40, paddingHorizontal: 30}}
-                    keyExtractor={(item, index) => item.item.toString()}
-                    renderItem={({item}) => {
-                        return (_renderCard(item))
-                    }}
+                    keyExtractor={(item) => item.item.toString()}
+                    renderItem={({ item, index }) => _renderCard(item, index)}
                 />
             </View>
         </View>

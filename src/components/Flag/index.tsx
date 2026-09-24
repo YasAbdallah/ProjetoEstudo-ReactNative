@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity } from "react-native";
+import { Text, View } from "react-native";
 import { style } from "./styles";
 
 type FlagProps = {
@@ -10,7 +10,7 @@ type FlagProps = {
 
 export function Flag({caption, color, selected}: FlagProps){
      return (
-        <TouchableOpacity 
+        <View 
             style={
                 [
                     style.container, 
@@ -21,6 +21,6 @@ export function Flag({caption, color, selected}: FlagProps){
 
         >
             <Text style={{ color: "#fff" }}>{caption}</Text>
-        </TouchableOpacity>
+        </View>
     );
 }

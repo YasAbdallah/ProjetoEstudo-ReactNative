@@ -1,23 +1,16 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
-import React, { createContext, useContext, useRef, useState } from "react";
-import { Dimensions, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { Dimensions, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
 import { Modalize } from "react-native-modalize";
 import { Input } from "../components/Input";
 import { themas } from "../global/themes";
 import { Flag } from "../components/Flag";
 import { style } from "./styles";
 import CustomDateTimePicker from "../components/CustomDateTimePicker";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContextType } from "../global/Props";
 
-
-type formProps = {
-    title: string;
-    description: string;
-    selectedFlag: string;
-    selectedDate: Date;
-    selectedTime: Date;
-}
-
-export const AuthContextList = createContext({});
+export const AuthContextList = createContext<AuthContextType>({} as AuthContextType);
 
 const flags = [
     { caption: "urgente", color: themas.colors.red },
@@ -34,6 +27,8 @@ export const AuthProviderList = (props: any): any => {
     const [selectedTimeValue, setSelectedTimeValue] = useState<Date>(new Date());
     const [selectedDate, setSelectedDate] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string>("");
+    const [item, setItem] = useState<number>(0);
+    const [taskList, setTaskList] = useState<Array<any>>([]);
 
 
     const [showDataPicker, setShowDataPicker] = useState(false);
@@ -47,10 +42,16 @@ export const AuthProviderList = (props: any): any => {
         modalizeRef.current?.close();
     }
 
+    useEffect(() => {
+        getTaskList();
+    }, [])
+
     const _renderFlags = () => {
         return flags.map((flag, index) => (
-            <TouchableOpacity key={index}>
-                <Flag caption={flag.caption} color={flag.color} />
+            <TouchableOpacity key={index}
+                onPress={() => setSelectedFlag(flag.caption)}
+            >
+                <Flag caption={flag.caption} color={flag.color} selected={selectedFlag === flag.caption} />
             </TouchableOpacity>
         ));
     }
@@ -67,6 +68,63 @@ export const AuthProviderList = (props: any): any => {
         setSelectedTime(nextTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     }
 
+    const clearFields = () => {
+        setTitle("");
+        setDescription("");
+        setSelectedFlag("urgente");
+        setSelectedDateValue(new Date());
+        setSelectedTimeValue(new Date());
+        setSelectedDate("");
+        setSelectedTime("");
+        setItem(0);
+    }
+
+    const handleOpen = () => {
+        clearFields();
+        onOpen();
+    }
+
+    const handleSave = async () => {
+        if(!title || !description || !selectedFlag ) {
+            Alert.alert("Por favor, preencha todos os campos.");
+            return;
+        }
+
+        try {
+            const newItem = {
+                item:  Date.now(),
+                title: title,
+                description: description,
+                flag: selectedFlag,
+                timeLimit: new Date(selectedDateValue.getFullYear(), selectedDateValue.getMonth(), selectedDateValue.getDate(), selectedTimeValue.getHours(), selectedTimeValue.getMinutes()).toISOString()
+            }
+
+            await AsyncStorage.setItem("taskList", JSON.stringify(newItem));
+
+            setTaskList(prevList => [...prevList, newItem]);
+            Alert.alert("Tarefa criada com sucesso!");
+            handleOpen();
+            onClose();
+
+        } catch (error) {
+            Alert.alert(`Erro ao criar tarefa.` );
+        }
+    }
+
+    const handleEdit = () => {return};
+    const handleDelete = () => {return};
+
+    async function getTaskList() {
+        try {
+            const storageData = await AsyncStorage.getItem("taskList");
+            const taskList = storageData ? JSON.parse(storageData): [];
+            setTaskList(taskList);
+        } catch (error) {
+            Alert.alert("Ocorreu um erro ao listar as tarefas.");
+        }
+    }
+
+
     const _container = () => {
         return (
             <KeyboardAvoidingView
@@ -81,7 +139,7 @@ export const AuthProviderList = (props: any): any => {
                         ></MaterialIcons>
                     </TouchableOpacity>
                     <Text style={style.title}>Criar Tarefa</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => {handleSave()}}>
                         <MaterialIcons
                             name="check"
                             size={30}
@@ -166,7 +224,7 @@ export const AuthProviderList = (props: any): any => {
     }
 
     return (
-        <AuthContextList.Provider value={{ onOpen }}>
+        <AuthContextList.Provider value={{ onOpen, taskList, handleEdit, handleDelete }}>
             {props.children}
             <Modalize
                 ref={modalizeRef}

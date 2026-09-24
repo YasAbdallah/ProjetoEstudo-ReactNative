@@ -26,18 +26,19 @@ export const style = StyleSheet.create({
     },
     card: {
         width: "100%",
-        height: 6,
+        minHeight: 86,
         backgroundColor: "#fff",
         marginTop: 10,
         justifyContent: "center",
-        padding: 10,
+        padding: 14,
         borderWidth: 1,
-        borderColor: themas.colors.lightGray
+        borderColor: themas.colors.lightGray,
+        borderRadius: 12
     },
     rowCard: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent:"space-between"
+        justifyContent: "space-between"
     },
     rowCardLeft: {
         width: "100%",
@@ -47,9 +48,11 @@ export const style = StyleSheet.create({
     },
     titleCard: {
         fontSize: 16,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        marginBottom: 4
     },
     descriptionCard: {
-        color: themas.colors.gray
+        color: themas.colors.gray,
+        fontSize: 13
     }
 });
