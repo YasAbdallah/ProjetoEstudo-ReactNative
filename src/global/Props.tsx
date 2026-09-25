@@ -1,6 +1,7 @@
 export interface AuthContextType{
     taskList: Array<PropCard>;
     onOpen: () => void;
+    handleSave: () => Promise<void>;
     handleEdit: Function;
     handleDelete: Function;
 }
@@ -10,5 +11,5 @@ export type PropCard = {
     flag: "urgente" | "opcional";
     item: number;
     title: string;
-    timeLimit: Date;
+    timeLimit: string;
 }

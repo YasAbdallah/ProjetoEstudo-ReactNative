@@ -8,7 +8,7 @@ import { Flag } from "../components/Flag";
 import { style } from "./styles";
 import CustomDateTimePicker from "../components/CustomDateTimePicker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthContextType } from "../global/Props";
+import { AuthContextType, PropCard } from "../global/Props";
 
 export const AuthContextList = createContext<AuthContextType>({} as AuthContextType);
 
@@ -28,7 +28,7 @@ export const AuthProviderList = (props: any): any => {
     const [selectedDate, setSelectedDate] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string>("");
     const [item, setItem] = useState<number>(0);
-    const [taskList, setTaskList] = useState<Array<any>>([]);
+    const [taskList, setTaskList] = useState<PropCard[]>([]);
 
 
     const [showDataPicker, setShowDataPicker] = useState(false);
@@ -79,40 +79,81 @@ export const AuthProviderList = (props: any): any => {
         setItem(0);
     }
 
-    const handleOpen = () => {
-        clearFields();
-        onOpen();
-    }
 
     const handleSave = async () => {
-        if(!title || !description || !selectedFlag ) {
-            Alert.alert("Por favor, preencha todos os campos.");
-            return;
+        if(!title || !description || !selectedFlag || !selectedDate || !selectedTime) {
+            return Alert.alert("Atenção!","Por favor, preencha todos os campos.");
         }
 
         try {
-            const newItem = {
-                item:  Date.now(),
-                title: title,
-                description: description,
-                flag: selectedFlag,
-                timeLimit: new Date(selectedDateValue.getFullYear(), selectedDateValue.getMonth(), selectedDateValue.getDate(), selectedTimeValue.getHours(), selectedTimeValue.getMinutes()).toISOString()
+            const timeLimit = new Date(
+                selectedDateValue.getFullYear(),
+                selectedDateValue.getMonth(),
+                selectedDateValue.getDate(),
+                selectedTimeValue.getHours(),
+                selectedTimeValue.getMinutes()
+            ).toISOString();
+
+            const newItem: PropCard = {
+                item: item !== 0 ? item : Date.now(),
+                title,
+                description,
+                flag: selectedFlag as PropCard["flag"],
+                timeLimit,
+            };
+
+            const storageData = await AsyncStorage.getItem("taskList");
+            const taskList:PropCard[] = storageData ? JSON.parse(storageData) as PropCard[] : [];
+
+            const index = taskList.findIndex((task) => task.item === newItem.item);
+            const nextTaskList = [...taskList];
+
+            if(index === -1){
+                nextTaskList.push(newItem);
+            }else{
+                nextTaskList[index] = newItem;
             }
 
-            await AsyncStorage.setItem("taskList", JSON.stringify(newItem));
+            await AsyncStorage.setItem("taskList", JSON.stringify(nextTaskList));
 
-            setTaskList(prevList => [...prevList, newItem]);
-            Alert.alert("Tarefa criada com sucesso!");
-            handleOpen();
+            setTaskList(nextTaskList);
+            clearFields();
             onClose();
 
+            Alert.alert("Tarefa criada com sucesso!");
         } catch (error) {
-            Alert.alert(`Erro ao criar tarefa.` );
+            Alert.alert("Erro ao criar tarefa.", `${error}` );
         }
     }
 
-    const handleEdit = () => {return};
-    const handleDelete = () => {return};
+    const handleEdit = async (itemUpdate:PropCard) => {
+        try {
+            setTitle(itemUpdate.title);
+            setDescription(itemUpdate.description);
+            setItem(itemUpdate.item);
+
+            const timeLimit = new Date(itemUpdate.timeLimit);
+            setSelectedDate(timeLimit.toLocaleDateString());
+            setSelectedTime(timeLimit.toLocaleTimeString());
+
+            onOpen();
+        } catch (error) {
+            Alert.alert("Erro ao tentar recuperar dados.", "Ocorreu um erro ao tentar recuperar dados para editar o item.");
+        }
+    };
+
+    const handleDelete = async (itemDelete:PropCard) => {
+        try {
+            const storageData = await AsyncStorage.getItem("taskList");
+            const taskList:Array<PropCard> = storageData ? JSON.parse(storageData) : [];
+
+            const updatedTaskList = taskList.filter(item => item.item !== itemDelete.item);
+            await AsyncStorage.setItem("taskList", JSON.stringify(updatedTaskList));
+            setTaskList(updatedTaskList);
+        } catch (error) {
+            Alert.alert("Erro ao excluir o item.", "Ocorreu um erro inesperado ai tentar excluir o item.")
+        }
+    };
 
     async function getTaskList() {
         try {
@@ -224,22 +265,12 @@ export const AuthProviderList = (props: any): any => {
     }
 
     return (
-        <AuthContextList.Provider value={{ onOpen, taskList, handleEdit, handleDelete }}>
+        <AuthContextList.Provider value={{ onOpen, taskList, handleSave, handleEdit, handleDelete }}>
             {props.children}
             <Modalize
                 ref={modalizeRef}
-                modalHeight={Dimensions.get("window").height * 0.8}
-                panGestureEnabled={false}
-                tapGestureEnabled={false}
-                avoidKeyboardLikeIOS={true}
-                keyboardAvoidingBehavior="padding"
-                keyboardAvoidingOffset={Platform.OS === "ios" ? 20 : 0}
-                disableScrollIfPossible={false}
-                scrollViewProps={{
-                    keyboardShouldPersistTaps: "always",
-                    showsVerticalScrollIndicator: false,
-                }}
-                childrenStyle={{ flex: 1 }}
+                childrenStyle={{height: Dimensions.get("window").height / 1.7}}
+                adjustToContentHeight={true}
             >
                 {_container()}
             </Modalize>

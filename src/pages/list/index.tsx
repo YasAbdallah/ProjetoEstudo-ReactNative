@@ -10,13 +10,49 @@ import { AuthContextList } from "../../context/authContextList";
 import { AuthContextType, PropCard } from "../../global/Props";
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-
 const getFlagColor = (flag: PropCard["flag"]) => flag === "urgente" ? themas.colors.red : themas.colors.lightBlue; 
 
 
 export default function List() {
-    const { taskList, onOpen, handleEdit, handleDelete } = useContext<AuthContextType>(AuthContextList);
+    const { taskList, handleEdit, handleDelete } = useContext<AuthContextType>(AuthContextList);
     const swipeableRef = useRef<SwipeableMethods>(null);
+
+
+    const renderRightActions = () => {
+        return (
+            <View style={[style.button, { backgroundColor: "#ef4444" }]}>
+                <MaterialIcons
+                    name="delete"
+                    size={28}
+                    color={"#fff"}
+                />
+            </View>
+        );
+    }
+
+    const renderLeftActions = () => {
+        return (
+            <View style={[style.button, { backgroundColor: "#3b82f6" }]}>
+                <MaterialIcons
+                    name="edit"
+                    size={28}
+                    color={"#fff"}
+                />
+            </View>
+        );
+    }
+
+    const handleSwipeOpen = (direction: "right" | "left", item: PropCard) => {
+        if (direction === "left") {
+            handleDelete(item);
+        }
+
+        if (direction === "right") {
+            handleEdit(item);
+        }
+
+        swipeableRef.current?.close();
+    }
 
     const _renderCard = (Props: PropCard, index: any) => {
         const color = getFlagColor(Props.flag);
@@ -25,7 +61,9 @@ export default function List() {
             <Swipeable
                 ref={(ref) => {swipeableRef.current = ref}}
                 key={index}
-            
+                renderRightActions={renderRightActions}
+                renderLeftActions={renderLeftActions}
+                onSwipeableOpen={(direction) => handleSwipeOpen(direction, Props)}
             >
                 <View style={style.card}>
                     <View style={style.rowCard}>
@@ -34,7 +72,9 @@ export default function List() {
                             <View style={{ flex: 1 }}>
                                 <Text style={style.titleCard}>{Props.title}</Text>
                                 <Text style={style.descriptionCard}>{Props.description}</Text>
-                                <Text style={style.descriptionCard}>Até: {Props.timeLimit.toISOString()}</Text>
+                                <Text style={style.descriptionCard}>
+                                    {Props.timeLimit ? `Até: ${new Date(Props.timeLimit).toLocaleString("pt-BR")}` : "Até: --"}
+                                </Text>
                             </View>
                             <Flag caption={Props.flag} color={color} />
                         </View>
